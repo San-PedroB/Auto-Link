@@ -1,0 +1,46 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title class="ion-text-center">Menú</ion-title> <!-- Título simple en el encabezado -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Saludo personalizado dentro del contenido -->
+  <div class="saludo-usuario ion-text-center">
+    <h2 class="fade">Bienvenido, Conductor {{datosFormulario.nombre}} {{datosFormulario.apellido}} </h2>
+  </div>
+
+  <!-- Botón: Perfil de Usuario -->
+  <ion-button routerLink="/perfil-usuario" expand="block" fill="solid" color="primary" class="boton-grande">
+    <ion-icon name="person-circle-outline" slot="start" class="icono-boton"></ion-icon>
+    Perfil de Usuario
+  </ion-button>
+
+  <!-- Botón: Crear Viaje -->
+  <ion-button (click)="verificarEstadoViaje()"  expand="block" fill="solid" color="secondary" class="boton-grande">
+    <ion-icon name="search-outline" slot="start" class="icono-boton"></ion-icon>
+    Crear Viaje
+  </ion-button>
+
+  <ion-button routerLink="/listado-de-viajes"  expand="block" fill="solid" color="secondary" class="boton-grande">
+    <ion-icon name="search-outline" slot="start" class="icono-boton"></ion-icon>
+    Ver Viajes en Curso
+  </ion-button>
+
+  <!-- Botón: Cerrar Sesión -->
+  <ion-button expand="block" fill="solid" color="danger" class="boton-grande" (click)="cerrarSesion()">
+    <ion-icon name="log-out-outline" slot="start" class="icono-boton"></ion-icon>
+    Cerrar Sesión
+  </ion-button>
+
+  <!-- Botón: Cambiar Perfil de Usuario --> 
+  <ion-button expand="block" fill="solid" color="tertiary" class="boton-grande" expand="block" (click)="abrirModal()">
+    <ion-icon name="create-outline" slot="start" class="icono-boton"></ion-icon>
+    Cambiar Perfil de Usuario
+  </ion-button>
+
+  <!-- Botón: Ayuda al final -->
+  <ion-button expand="block" fill="clear" color="medium" class="boton-ayuda">
+    Ayuda
+  </ion-button>
+</ion-content>

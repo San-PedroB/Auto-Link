@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button *ngIf="esConductor" defaultHref="/home-conductor" text="Volver"></ion-back-button>
+      <ion-back-button *ngIf="!esConductor" defaultHref="/home-pasajero" text="Volver"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Viaje Actual</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content class="ion-padding">
+  <div *ngIf="viajeActual">
+    <!-- Mapa Ficticio -->
+    <div class="mapa-container">
+      <img src="assets/images/mapa-ficticio.jpg" alt="Mapa Ficticio" class="mapa-img" />
+    </div>
+
+    <!-- Información del Viaje -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Detalles del Viaje</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>Origen:</strong> {{ viajeActual.origen }}</p>
+        <p><strong>Destino:</strong> {{ viajeActual.destino }}</p>
+        <p *ngIf="datosConductor">
+          <strong>Conductor:</strong> {{ datosConductor.nombre }} {{ datosConductor.apellido }}
+        </p>
+        <p *ngIf="!datosConductor">
+          <strong>Conductor:</strong> Información no disponible
+        </p>
+        <p><strong>Estado:</strong> {{ viajeActual.estado }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botón con contador -->
+    <ion-button
+      expand="block"
+      color="danger"
+      (click)="cancelarViaje()"
+      
+    >
+      Cancelar Viaje
+      
+    </ion-button>
+  </div>
+
+  <div *ngIf="!viajeActual">
+    <p class="ion-text-center">Cargando información del viaje...</p>
+  </div>
+</ion-content>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">auto-link</string>
+    <string name="title_activity_main">auto-link</string>
+    <string name="package_name">cl.duoc.autolink</string>
+    <string name="custom_url_scheme">cl.duoc.autolink</string>
+</resources>

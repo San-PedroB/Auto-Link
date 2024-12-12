@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button default-href="/" text="Volver"></ion-back-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">Perfil de Usuario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Tarjeta de perfil -->
+  <ion-card class="perfil-card">
+    <ion-card-header>
+      <ion-card-title class="ion-text-center">Información Personal</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item class="perfil-item">
+        <ion-label><strong>Nombre:</strong></ion-label>
+        <ion-text> {{datosFormulario.nombre}} </ion-text> <!-- Nombre del usuario -->
+      </ion-item>
+      <ion-item class="perfil-item">
+        <ion-label><strong>Apellido:</strong></ion-label>
+        <ion-text> {{datosFormulario.apellido}} </ion-text> <!-- Apellido del usuario -->
+      </ion-item>
+      <ion-item class="perfil-item">
+        <ion-label><strong>Correo:</strong></ion-label>
+        <ion-text> {{datosFormulario.email}} </ion-text> <!-- Correo del usuario -->
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botón para editar perfil -->
+  <ion-button routerLink="/cambiar-password" expand="block" color="primary" class="boton-editar">
+    Cambiar Contraseña
+  </ion-button>
+</ion-content>

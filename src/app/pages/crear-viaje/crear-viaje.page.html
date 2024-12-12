@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button default-href="/" text="Volver"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Crear Viaje</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Datos del Viaje</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <form [formGroup]="formularioViaje">
+              <!-- Campo: Origen -->
+              <ion-item>
+                <ion-label position="floating">Origen</ion-label>
+                <br>
+                <ion-input formControlName="origen" type="text" placeholder="Ingresa dirección origen del viaje"></ion-input>
+              </ion-item>
+
+              <!-- Campo: Destino -->
+              <ion-item>
+                <ion-label position="floating">Destino</ion-label>
+                <br>
+                <ion-input formControlName="destino" type="text" placeholder="Ingresa dirección destino del viaje"></ion-input>
+              </ion-item>
+
+              <!-- Campo: Precio -->
+              <ion-item>
+                <ion-label position="floating">Precio</ion-label>
+                <br>
+                <ion-input formControlName="precio" type="number" placeholder="Ingresa el precio del viaje"></ion-input>
+              </ion-item>
+              <br>
+              <!-- Campo: Cantidad pasajeros -->
+              <ion-item>
+                <ion-label position="floating" style="font-size: 1.25em">Capacidad de pasajeros</ion-label>
+                <ion-range formControlName="cantidadPasajeros" min="1" max="10" step="1" snaps="true" ticks="true" pin="true">
+                  <ion-label slot="start">1</ion-label>
+                  <ion-label slot="end">10</ion-label>
+                </ion-range>
+              </ion-item>
+              <!-- Muestra el valor seleccionado -->
+              <br>
+              <p style="text-align: center; font-size: 1.2em">
+                Pasajeros que puedes llevar: {{ formularioViaje.get('cantidadPasajeros')?.value || 1 }}
+              </p>
+              <br>
+              <!-- Botón para crear el viaje -->
+              <ion-button expand="full" type="submit" (click)="crearViaje()">Crear Viaje</ion-button>
+            </form>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Nueva sección: Datos del viaje creado -->
+    <ion-row *ngIf="viaje">
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Detalles del Viaje</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p><strong>Origen:</strong> {{ viaje.origen }}</p>
+            <p><strong>Destino:</strong> {{ viaje.destino }}</p>
+            <p><strong>Precio:</strong> {{ viaje.precio }}</p>
+            <p><strong>Cantidad de Pasajeros:</strong> {{ viaje.cantidadPasajeros }}</p>
+            <p><strong>Estado:</strong> {{ viaje.estado }}</p>
+            <p><strong>ID del Viaje:</strong> {{ viaje.id }}</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
