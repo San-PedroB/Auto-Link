@@ -7,7 +7,6 @@ import {
 import { ModalLoginComponent } from '../../components/modal-login/modal-login.component';
 import { Router } from '@angular/router';
 import { GuardarCorreoService } from '../../services/guardar-correo.service';
-import { FormularioService } from '../../services/formulario.service'; // Importar el servicio
 import { FirestoreService } from 'src/app/services/firestore/firestore.service';
 
 @Component({
@@ -22,14 +21,12 @@ export class HomePasajeroPage implements OnInit {
   constructor(
     private modalController: ModalController,
     private router: Router,
-    private formularioService: FormularioService,
     private animationCtrl: AnimationController,
     private fireStoreService: FirestoreService,
     private guardarCorreoService: GuardarCorreoService
   ) {}
 
   async ngOnInit() {
-    this.datosFormulario = this.formularioService.getDatos();
     // Verificar si los datos se cargan correctamente
     console.log('Datos del usuario:', this.datosFormulario);
 

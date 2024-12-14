@@ -6,7 +6,6 @@ import {
 } from '@ionic/angular';
 import { ModalLoginComponent } from '../../components/modal-login/modal-login.component';
 import { Router } from '@angular/router';
-import { FormularioService } from '../../services/formulario.service'; // Importar el servicio formulario
 import { ServicioViajesService } from 'src/app/services/servicio-viajes.service'; // Importar servicio de viajes
 
 @Component({
@@ -21,7 +20,6 @@ export class HomeConductorPage implements OnInit {
     private modalController: ModalController,
     private router: Router,
     private toastController: ToastController,
-    private formularioService: FormularioService,
     private servicioViajes: ServicioViajesService,
     private animationCtrl: AnimationController
   ) {}
@@ -39,8 +37,6 @@ export class HomeConductorPage implements OnInit {
   }
 
   ngOnInit() {
-    this.datosFormulario = this.formularioService.getDatos();
-    // Verificar si los datos se cargan correctamente
     console.log('Datos del usuario:', this.datosFormulario);
   }
 
@@ -58,17 +54,6 @@ export class HomeConductorPage implements OnInit {
   }
 
   async verificarEstadoViaje() {
-    /*if (this.servicioViajes.isViajeCreado()) {
-      // Mostrar mensaje si hay un viaje en curso
-      const toast = await this.toastController.create({
-        message: 'Ya tienes un viaje en curso.',
-        duration: 3000,
-        position: 'top',
-        color: 'warning',
-      });
-      await toast.present();
-      return;
-    }*/
     this.abirVentanaCrearViaje();
   }
 

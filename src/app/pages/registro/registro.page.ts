@@ -12,6 +12,7 @@ import {
 } from '@ionic/angular';
 
 import { FirestoreService } from '../../services/firestore/firestore.service';
+import { FirebaseError } from 'firebase/app';
 
 @Component({
   selector: 'app-registro',
@@ -75,40 +76,67 @@ export class RegistroPage implements OnInit {
   }
 
   async enviarFormulario() {
-    // Verificar si el correo ya está registrado
     if (this.formularioRegistro.valid) {
-      const documentos = await this.firestoreService.getDocumentsByQuery(
-        'users', // Nombre de la colección
-        'email', // Campo a buscar
-        this.formularioRegistro.value.email // Valor a buscar
-      );
+      try {
+        const email = this.formularioRegistro.value.email;
+        const password = this.formularioRegistro.value.password;
+        const nombre = this.formularioRegistro.value.nombre;
+        const apellido = this.formularioRegistro.value.apellido;
 
-      const data = documentos.length > 0 ? documentos[0] : null; // Verificar si hay resultados
+        // 1. Registrar en Firebase Authentication
+        const uid = await this.firestoreService.registrarUsuarioFirebase(
+          email,
+          password
+        );
 
-      if (data) {
+        // 2. Guardar datos adicionales en Firestore
+        const datosUsuario = {
+          uid, // Vinculamos con el UID de Firebase Authentication
+          nombre,
+          apellido,
+          email,
+        };
+        await this.firestoreService.createDocument('users', datosUsuario);
+
+        // 3. Confirmar registro exitoso
+        console.log('Usuario registrado exitosamente:', datosUsuario);
+        const toastExito = await this.toastController.create({
+          message: '¡Usuario registrado exitosamente!',
+          duration: 3000,
+          position: 'bottom',
+          color: 'success',
+        });
+        await toastExito.present();
+
+        // Redirigir al usuario a la página de login
+        this.navController.navigateRoot('/login');
+      } catch (error: unknown) {
+        console.error('Error al registrar usuario:', error);
+
+        // Verifica si el error es de tipo FirebaseError
+        let mensajeError = 'Ocurrió un error al registrar al usuario.';
+        if (error instanceof FirebaseError) {
+          if (error.code === 'auth/email-already-in-use') {
+            mensajeError = 'El correo ingresado ya está registrado.';
+          }
+        }
+
         const toastError = await this.toastController.create({
-          message: 'El correo ya esta registrado',
+          message: mensajeError,
           duration: 3000,
           position: 'bottom',
           color: 'danger',
         });
         await toastError.present();
-        return;
       }
-
-      await this.firestoreService.createDocument(
-        'users', //nombre de la coleccion
-        this.formularioRegistro.value
-      );
-
-      console.log('Datos guardados:', this.formularioRegistro.value);
-      const toastRegistro = await this.toastController.create({
-        message: '¡Usuario creado exitosamente!',
+    } else {
+      const toastErrorCampos = await this.toastController.create({
+        message: 'Por favor, completa todos los campos correctamente.',
         duration: 3000,
         position: 'bottom',
+        color: 'danger',
       });
-      await toastRegistro.present();
-      this.navController.navigateRoot('/login');
+      await toastErrorCampos.present();
     }
   }
 

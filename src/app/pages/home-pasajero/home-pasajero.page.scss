@@ -1,26 +1,25 @@
-/* Estilo para el saludo personalizado */
-.saludo-usuario h2 {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  /* Botones grandes */
-  .boton-grande {
-    margin: 20px 0;
-    font-size: 18px;
-    height: 60px;
-    --padding-start: 20px;
-  }
-  
-  /* Tamaño de los iconos en los botones */
-  .icono-boton {
-    font-size: 28px;
-  }
-  
-  /* Estilo del botón de ayuda */
-  .boton-ayuda {
-    margin-top: 30px;
-    font-size: 16px;
-  }
-  
+.menu-container-vertical {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* Distribuir los botones uniformemente */
+  align-items: center;
+  height: calc(100% - 100px); /* Espacio para el header y el footer */
+  padding: 16px;
+}
+
+.menu-button {
+  width: 90%; /* Los botones ocuparán el 90% del ancho de la pantalla */
+  max-width: 400px; /* Límite máximo para pantallas más grandes */
+  height: 80px; /* Altura más grande para los botones */
+  --border-radius: 12px; /* Bordes redondeados */
+  font-size: 18px; /* Tamaño del texto */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.menu-button ion-icon {
+  font-size: 28px; /* Iconos más grandes */
+  margin-right: 12px; /* Espacio entre el icono y el texto */
+}

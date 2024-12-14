@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormularioService } from '../../services/formulario.service'; // Importar el servicio
 import { AnimationController } from '@ionic/angular';
 import { FirestoreService } from 'src/app/services/firestore/firestore.service';
+import { GuardarCorreoService } from 'src/app/services/guardar-correo.service';
 
 @Component({
   selector: 'app-perfil-usuario',
@@ -9,20 +9,33 @@ import { FirestoreService } from 'src/app/services/firestore/firestore.service';
   styleUrls: ['./perfil-usuario.page.scss'],
 })
 export class PerfilUsuarioPage implements OnInit {
-  datosFormulario: any = {};
+  datosFormulario: any = {}; // Datos del usuario que se mostrarán en la vista
 
   constructor(
-    private formularioService: FormularioService,
-    private animationCtrl: AnimationController
+    private animationCtrl: AnimationController,
+    private firestoreService: FirestoreService,
+    private guardarCorreoService: GuardarCorreoService
   ) {}
 
-  ngOnInit() {
-    this.datosFormulario = this.formularioService.getDatos();
-    // Verificar si los datos se cargan correctamente
-    console.log('Datos del usuario:', this.datosFormulario);
+  async ngOnInit() {
+    // Obtener el correo del usuario logueado desde GuardarCorreoService
+    const correo = this.guardarCorreoService.getCorreoUsuario();
+    if (correo) {
+      // Buscar los datos del usuario en Firestore usando el correo
+      const usuarios = await this.firestoreService.getDocumentsByQuery(
+        'users', // Colección en Firestore
+        'email', // Campo a buscar
+        correo // Correo del usuario logueado
+      );
+
+      // Asignar los datos directamente (asumimos que siempre existe)
+      this.datosFormulario = usuarios[0];
+      console.log('Datos del usuario cargados:', this.datosFormulario);
+    }
   }
+
   ionViewWillEnter() {
-    const cardElement = document.querySelector('.perfil-card'); // Selecciona el elemento
+    const cardElement = document.querySelector('.perfil-card'); // Selecciona el elemento de perfil
     if (cardElement) {
       const fadeAnimation = this.animationCtrl
         .create()
