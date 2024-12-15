@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Resumen del Viaje</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card *ngIf="viajeResumen">
+    <ion-card-header>
+      <ion-card-title>Detalles del Viaje</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p><strong>Origen:</strong> {{ viajeResumen.origen }}</p>
+      <p><strong>Destino:</strong> {{ viajeResumen.destino }}</p>
+      <p><strong>Conductor:</strong> {{ viajeResumen.conductorNombre }} {{ viajeResumen.conductorApellido }}</p>
+      <p><strong>Precio del Viaje:</strong> {{ viajeResumen.precio }}</p>
+      <p><strong>Estado:</strong> {{ viajeResumen.estado }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="!viajeResumen" class="ion-text-center">
+    <p>Cargando datos del viaje...</p>
+  </div>
+
+  <ion-button expand="block" routerLink="/home-pasajero" color="primary">
+    Volver al Home
+  </ion-button>
+  
+</ion-content>

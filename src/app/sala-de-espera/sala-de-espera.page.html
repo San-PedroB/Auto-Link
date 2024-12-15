@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Sala de Espera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ion-text-center">
+    <h2>Esperando que el conductor inicie el viaje...</h2>
+    <p><strong>Conductor:</strong> {{ conductorNombre }} {{ conductorApellido }}</p>
+    <p><strong>Estado del Viaje:</strong> {{ estadoViaje | titlecase }}</p>
+    <ion-spinner name="bubbles"></ion-spinner>
+  </div>
+
+  <ion-button expand="full" color="danger" (click)="cancelarEspera()">
+    Abandonar la espera
+  </ion-button>
+
+  <div class="ion-text-center ion-margin-top">
+    <p style="font-size: 0.9em; color: gray;">
+      Tu lugar será liberado para otro pasajero.
+    </p>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-title class="ion-text-center">Auto Link</ion-title>
+  </ion-toolbar>
+</ion-footer>

@@ -92,6 +92,8 @@ export class CrearViajePage implements OnInit {
         destino: this.formularioViaje.value.destino,
         precio: this.formularioViaje.value.precio,
         cantidadPasajeros: this.formularioViaje.value.cantidadPasajeros,
+        plazasRestantes: this.formularioViaje.value.cantidadPasajeros, // Inicializa las plazas
+        usuariosAceptados: [], // Inicializa la lista de usuarios aceptados
         estado: 'pendiente', // Asignar estado inicial como 'pendiente'
         conductorCorreo: correoConductor,
       };

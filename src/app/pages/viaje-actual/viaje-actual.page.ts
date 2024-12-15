@@ -29,26 +29,42 @@ export class ViajeActualPage implements OnInit, OnDestroy {
     this.esConductor = this.rolUsuarioService.esConductor();
     const viajeId = this.route.snapshot.paramMap.get('id'); // ID del viaje desde la URL
 
-    if (viajeId) {
-      this.viajeActual = await this.firestoreService.getViajeActual(viajeId);
-      if (this.viajeActual?.conductorCorreo) {
-        // Obtener datos del conductor usando el correo
-        const conductores = await this.firestoreService.getDocumentsByQuery(
-          'users',
-          'email',
-          this.viajeActual.conductorCorreo
-        );
-        if (conductores.length > 0) {
-          this.datosConductor = conductores[0];
-        }
-      }
-    }
+    this.intervalo = setInterval(() => {
+      this.verificarEstadoViaje();
+    }, 3000); // Verifica el estado cada 3 segundos
 
-    if (!this.viajeActual) {
-      console.warn('No se encontraron datos para el viaje actual.');
-      await this.mostrarMensaje('No hay información del viaje actual.');
-      this.navController.navigateRoot('/listado-de-viajes');
-      return;
+    if (viajeId) {
+      try {
+        this.viajeActual = await this.firestoreService.getViajeActual(viajeId);
+
+        if (this.viajeActual) {
+          console.log('Datos del viaje cargados:', this.viajeActual);
+
+          // Cargar datos del conductor
+          if (this.viajeActual.conductorCorreo) {
+            const conductores = await this.firestoreService.getDocumentsByQuery(
+              'users',
+              'email',
+              this.viajeActual.conductorCorreo
+            );
+
+            if (conductores.length > 0) {
+              this.datosConductor = conductores[0];
+              console.log('Datos del conductor:', this.datosConductor);
+            } else {
+              console.warn('No se encontraron datos del conductor.');
+            }
+          }
+        } else {
+          console.warn('El viaje no existe o no se pudo cargar.');
+          await this.mostrarMensaje('No se encontraron datos del viaje.');
+          this.navController.navigateRoot('/listado-de-viajes');
+        }
+      } catch (error) {
+        console.error('Error al cargar el viaje:', error);
+        await this.mostrarMensaje('Error al cargar los datos del viaje.');
+        this.navController.navigateRoot('/listado-de-viajes');
+      }
     }
 
     console.log('Estado del viaje al cargar:', this.viajeActual.estado);
@@ -56,11 +72,14 @@ export class ViajeActualPage implements OnInit, OnDestroy {
     // Manejo según el estado del viaje
     switch (this.viajeActual.estado) {
       case 'pendiente':
-        this.iniciarTemporizador(); // Inicia temporizador si está pendiente
+        this.iniciarTemporizador();
         break;
       case 'aceptado':
-        // Si ya está activo, permanece en la vista
         await this.mostrarMensaje('El viaje ya está en progreso.');
+        break;
+      case 'en curso':
+        console.log('El viaje ya está en curso.');
+        // Permitir al pasajero permanecer en la vista sin redirección
         break;
       default:
         console.warn('Estado del viaje desconocido:', this.viajeActual.estado);
@@ -156,6 +175,68 @@ export class ViajeActualPage implements OnInit, OnDestroy {
       await this.mostrarMensaje(
         'El viaje no puede ser cancelado en este momento.'
       );
+    }
+  }
+
+  async terminarViaje() {
+    console.log('🚦 Terminando el viaje...');
+
+    try {
+      // Actualizar el estado del viaje en Firestore
+      await this.firestoreService.actualizarEstadoViaje(
+        this.viajeActual.id,
+        'finalizado'
+      );
+      console.log(`✅ Viaje con ID ${this.viajeActual.id} finalizado.`);
+
+      // Mostrar mensaje de confirmación al conductor
+      const toast = await this.toastController.create({
+        message: 'El viaje ha finalizado correctamente.',
+        duration: 2000,
+        position: 'bottom',
+        color: 'success',
+      });
+      await toast.present();
+
+      // Redirigir al conductor o al pasajero según el rol
+      if (this.esConductor) {
+        this.navController.navigateRoot('/listado-de-viajes'); // Vista de conductor
+      } else {
+        this.navController.navigateRoot(
+          `/resumen-viaje/${this.viajeActual.id}`
+        );
+      }
+    } catch (error) {
+      console.error('❌ Error al finalizar el viaje:', error);
+
+      const toastError = await this.toastController.create({
+        message: 'Hubo un error al finalizar el viaje. Inténtalo nuevamente.',
+        duration: 3000,
+        position: 'bottom',
+        color: 'danger',
+      });
+      await toastError.present();
+    }
+  }
+
+  async verificarEstadoViaje() {
+    const viaje = await this.firestoreService.getViajeActual(
+      this.viajeActual.id
+    );
+    if (viaje) {
+      this.viajeActual.estado = viaje.estado;
+      console.log('Estado del viaje actualizado:', this.viajeActual.estado);
+
+      // Si el estado es "finalizado", redirige al resumen del viaje
+      if (this.viajeActual.estado === 'finalizado') {
+        console.log('El viaje ha terminado. Redirigiendo al resumen...');
+        clearInterval(this.intervalo); // Detenemos cualquier intervalo en curso
+        this.navController.navigateRoot(
+          `/resumen-viaje/${this.viajeActual.id}`
+        );
+      }
+    } else {
+      console.error('No se encontraron datos del viaje.');
     }
   }
 

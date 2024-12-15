@@ -76,6 +76,21 @@ const routes: Routes = [
       ),
     canActivate: [AuthGuard], // Proteger esta ruta con el guard
   },
+  {
+    path: 'sala-de-espera',
+    loadChildren: () =>
+      import('./sala-de-espera/sala-de-espera.module').then(
+        (m) => m.SalaDeEsperaPageModule
+      ),
+  },
+
+  {
+    path: 'resumen-viaje/:id', // Ruta dinámica para el resumen del viaje
+    loadChildren: () =>
+      import('./pages/resumen-viaje/resumen-viaje.module').then(
+        (m) => m.ResumenViajePageModule
+      ),
+  },
 ];
 
 @NgModule({

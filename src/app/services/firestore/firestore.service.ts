@@ -124,6 +124,95 @@ export class FirestoreService {
     }
   }
 
+  async aceptarViaje(viajeId: string, correoPasajero: string): Promise<void> {
+    console.log('🚀 Iniciando aceptarViaje');
+    console.log('📌 ID del viaje:', viajeId);
+    console.log('📌 Correo del pasajero:', correoPasajero);
+
+    const viajeRef = doc(this.firestore, `viajes/${viajeId}`);
+    const viajeDoc = await getDoc(viajeRef);
+
+    if (!viajeDoc.exists()) {
+      console.error(`❌ El viaje con ID ${viajeId} no existe.`);
+      return;
+    }
+
+    const datosViaje = viajeDoc.data() || {};
+    console.log('✅ Datos actuales del viaje:', datosViaje);
+
+    const plazasRestantes = datosViaje['plazasRestantes'] ?? 0;
+    const usuariosAceptados: string[] = datosViaje['usuariosAceptados'] ?? [];
+
+    console.log('ℹ️ Plazas restantes antes:', plazasRestantes);
+    console.log('ℹ️ Usuarios aceptados antes:', usuariosAceptados);
+
+    // Verificar si hay plazas disponibles
+    if (plazasRestantes < 1) {
+      console.error('❌ No hay plazas disponibles.');
+      throw new Error('No hay plazas disponibles.');
+    }
+
+    // Verificar si el pasajero ya está en la lista
+    if (usuariosAceptados.includes(correoPasajero)) {
+      console.warn(`⚠️ El pasajero ${correoPasajero} ya aceptó este viaje.`);
+      return;
+    }
+
+    // Actualizar datos
+    usuariosAceptados.push(correoPasajero);
+    const nuevasPlazas = plazasRestantes - 1;
+
+    console.log('✅ Nueva lista de usuarios aceptados:', usuariosAceptados);
+    console.log('ℹ️ Plazas restantes después:', nuevasPlazas);
+
+    await updateDoc(viajeRef, {
+      usuariosAceptados,
+      plazasRestantes: nuevasPlazas,
+    });
+
+    console.log(
+      `🎉 Usuario ${correoPasajero} aceptó el viaje. Plazas restantes: ${nuevasPlazas}`
+    );
+  }
+
+  async cancelarParticipacion(
+    viajeId: string,
+    correoPasajero: string
+  ): Promise<void> {
+    const viajeRef = doc(this.firestore, `viajes/${viajeId}`);
+    const viajeDoc = await getDoc(viajeRef);
+
+    if (!viajeDoc.exists()) {
+      console.error(`El viaje con ID ${viajeId} no existe.`);
+      return;
+    }
+
+    const datosViaje = viajeDoc.data() || {};
+    const plazasRestantes = datosViaje['plazasRestantes'] ?? 0;
+    const usuariosAceptados: string[] = datosViaje['usuariosAceptados'] ?? [];
+
+    // Verificar si el pasajero está en la lista
+    if (!usuariosAceptados.includes(correoPasajero)) {
+      console.warn(`El pasajero ${correoPasajero} no está en la lista.`);
+      return;
+    }
+
+    // Remover al pasajero y actualizar datos
+    const nuevaLista = usuariosAceptados.filter(
+      (correo) => correo !== correoPasajero
+    );
+    const nuevasPlazas = plazasRestantes + 1;
+
+    await updateDoc(viajeRef, {
+      usuariosAceptados: nuevaLista,
+      plazasRestantes: nuevasPlazas,
+    });
+
+    console.log(
+      `El pasajero ${correoPasajero} canceló su participación. Plazas restantes: ${nuevasPlazas}`
+    );
+  }
+
   async iniciarSesion(correo: string, contrasena: string): Promise<any> {
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -201,7 +290,7 @@ export class FirestoreService {
     const viajeRef = doc(this.firestore, `viajes/${viajeId}`);
     await updateDoc(viajeRef, { estado: nuevoEstado });
     console.log(
-      `Estado del viaje con ID ${viajeId} actualizado a ${nuevoEstado}`
+      `🚀 Estado del viaje ${viajeId} actualizado a "${nuevoEstado}".`
     );
   }
 

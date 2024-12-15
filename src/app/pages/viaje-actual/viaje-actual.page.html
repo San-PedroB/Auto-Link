@@ -1,16 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button *ngIf="esConductor" defaultHref="/home-conductor" text="Volver"></ion-back-button>
-      <ion-back-button *ngIf="!esConductor" defaultHref="/home-pasajero" text="Volver"></ion-back-button>
-    </ion-buttons>
     <ion-title>Viaje Actual</ion-title>
   </ion-toolbar>
 </ion-header>
 
-
 <ion-content class="ion-padding">
-  <div *ngIf="viajeActual">
+  <div *ngIf="viajeActual; else cargando">
     <!-- Mapa Ficticio -->
     <div class="mapa-container">
       <img src="assets/images/mapa-ficticio.jpg" alt="Mapa Ficticio" class="mapa-img" />
@@ -28,27 +23,28 @@
           <strong>Conductor:</strong> {{ datosConductor.nombre }} {{ datosConductor.apellido }}
         </p>
         <p *ngIf="!datosConductor">
-          <strong>Conductor:</strong> Información no disponible
+          <strong>Conductor:</strong> Cargando datos...
         </p>
         <p><strong>Estado:</strong> {{ viajeActual.estado }}</p>
       </ion-card-content>
     </ion-card>
 
-    <!-- Botón con contador -->
     <ion-button
-      expand="block"
-      color="danger"
-      (click)="cancelarViaje()"
-      
-    >
-      Cancelar Viaje
-      
-    </ion-button>
+    *ngIf="esConductor && viajeActual.estado === 'en curso'"
+    expand="block"
+    color="danger"
+    (click)="terminarViaje()"
+  >
+    Terminar Viaje
+  </ion-button>
+  
   </div>
 
-  <div *ngIf="!viajeActual">
+  <!-- Plantilla de carga -->
+  <ng-template #cargando>
     <p class="ion-text-center">Cargando información del viaje...</p>
-  </div>
+    <ion-spinner name="bubbles" class="ion-margin"></ion-spinner>
+  </ng-template>
 </ion-content>
 
 <ion-footer>
