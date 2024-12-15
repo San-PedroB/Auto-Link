@@ -9,65 +9,88 @@
 
 <ion-content>
   <ion-grid>
-    <!-- Sección para viajes pendientes -->
-    <ion-row *ngIf="viajesPendientes.length > 0">
+    <!-- Sección para Mi Viaje -->
+    <ion-row *ngIf="viajesPendientes.length > 0 || viajesAceptados.length > 0">
       <ion-col size="12">
-        <h2 class="ion-text-center">Viajes Pendientes</h2>
-        <ion-card *ngFor="let viaje of viajesPendientes">
-          <ion-card-header>
-            <ion-card-title>{{ viaje.origen }} → {{ viaje.destino }}</ion-card-title>
-          </ion-card-header>
+        <h2 class="ion-text-center">Mi Viaje</h2>
+        <ng-container *ngFor="let viaje of viajesPendientes.concat(viajesAceptados)">
+          <ion-card *ngIf="viaje.conductorCorreo === usuarioActualCorreo">
+            <ion-card-header>
+              <ion-card-title>{{ viaje.origen }} → {{ viaje.destino }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p><strong>Origen:</strong> {{ viaje.origen }}</p>
+              <p><strong>Destino:</strong> {{ viaje.destino }}</p>
+              <p><strong>Precio:</strong> ${{ viaje.precio }}</p>
+              <p>
+                <strong>Estado:</strong>
+                <ion-badge [color]="viaje.estado === 'pendiente' ? 'warning' : 'success'">
+                  {{ viaje.estado | titlecase }}
+                </ion-badge>
+              </p>
 
-          <ion-card-content>
-            <p><strong>Origen:</strong> {{ viaje.origen }}</p>
-            <p><strong>Destino:</strong> {{ viaje.destino }}</p>
-            <p><strong>Precio:</strong> ${{ viaje.precio }}</p>
-            <p>
-            <p><strong>Pasajeros:</strong> {{ viaje.cantidadPasajeros }}</p>
-            <p>
-              <strong>Estado:</strong>
-              <ion-badge [color]="viaje.estado === 'pendiente' ? 'warning' : 'success'">
-                {{ viaje.estado | titlecase }}
-              </ion-badge>
-            </p>
+              <!-- Botón "Cancelar Viaje" si el viaje está pendiente -->
+              <ion-button 
+                *ngIf="viaje.estado === 'pendiente'" 
+                expand="full" 
+                color="danger" 
+                (click)="cancelarViaje(viaje.id)">
+                Cancelar Viaje
+              </ion-button>
 
-            <!-- Botón "Tomar Viaje" solo visible para pasajeros -->
-            <ion-button *ngIf="esPasajero" expand="full" color="success" (click)="tomarViaje(viaje)">
-              Tomar Viaje
-            </ion-button>
-
-            <!-- Botón para eliminar viaje visible solo para conductores -->
-            <ion-button *ngIf="esConductor" color="danger" expand="full" (click)="terminarViaje(viaje.id)">
-              Eliminar Viaje
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
+              <!-- Botón "Terminar Viaje" si el viaje está aceptado -->
+              <ion-button 
+                *ngIf="viaje.estado === 'aceptado'" 
+                expand="full" 
+                color="warning" 
+                (click)="terminarViaje(viaje.id)">
+                Terminar Viaje
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ng-container>
       </ion-col>
     </ion-row>
 
-    <!-- Sección para viajes aceptados (solo visible para conductores) -->
-    <ion-row *ngIf="esConductor && viajesAceptados.length > 0">
+    <!-- Sección para Otros Viajes -->
+    <ion-row *ngIf="viajesPendientes.length > 0">
       <ion-col size="12">
-        <h2 class="ion-text-center">Viajes Aceptados</h2>
-        <ion-card *ngFor="let viaje of viajesAceptados">
-          <ion-card-header>
-            <ion-card-title>{{ viaje.origen }} → {{ viaje.destino }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <p><strong>Origen:</strong> {{ viaje.origen }}</p>
-            <p><strong>Destino:</strong> {{ viaje.destino }}</p>
-            <p><strong>Precio:</strong> ${{ viaje.precio }}</p>
-            <p>
-              <strong>Estado:</strong>
-              <ion-badge color="success">Aceptado</ion-badge>
-            </p>
+        <h2 class="ion-text-center">Otros Viajes</h2>
+        <ng-container *ngFor="let viaje of viajesPendientes">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>{{ viaje.origen }} → {{ viaje.destino }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p><strong>Origen:</strong> {{ viaje.origen }}</p>
+              <p><strong>Destino:</strong> {{ viaje.destino }}</p>
+              <p><strong>Precio:</strong> ${{ viaje.precio }}</p>
+              <p><strong>Pasajeros:</strong> {{ viaje.cantidadPasajeros }}</p>
+              <p><strong>Conductor:</strong> {{ viaje.conductorNombre }} {{ viaje.conductorApellido }}</p>
+              <p>
+                <strong>Estado:</strong>
+                <ion-badge [color]="viaje.estado === 'pendiente' ? 'warning' : 'success'">
+                  {{ viaje.estado | titlecase }}
+                </ion-badge>
+              </p>
 
-            <!-- Botón "Terminar Viaje" visible solo para conductores -->
-            <ion-button color="warning" expand="full" (click)="terminarViaje(viaje.id)">
-              Terminar Viaje
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
+
+              <!-- Botón "Cancelar Viaje" solo visible si el viaje está pendiente y el usuario es el conductor -->
+              <ion-button 
+                *ngIf="esConductor && viaje.estado === 'pendiente' && viaje.conductorCorreo === usuarioActualCorreo" 
+                expand="full" 
+                color="danger" 
+                (click)="cancelarViaje(viaje.id)">
+                Cancelar Viaje
+              </ion-button>
+
+              <!-- Botón "Tomar Viaje" solo visible para pasajeros -->
+              <ion-button *ngIf="esPasajero" expand="full" color="success" (click)="tomarViaje(viaje)">
+                Tomar Viaje
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ng-container>
       </ion-col>
     </ion-row>
 

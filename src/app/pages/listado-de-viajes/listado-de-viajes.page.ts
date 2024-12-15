@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { RolUsuarioService } from '../../services/rol-usuario.service'; // Servicio de rol de usuario
-import { ServicioViajesService } from '../../services/servicio-viajes.service'; // Servicio de viajes
 import { ToastController, NavController } from '@ionic/angular';
 import { FirestoreService } from '../../services/firestore/firestore.service';
 
@@ -14,9 +13,9 @@ export class ListadoDeViajesPage implements OnInit {
   viajesAceptados: any[] = []; // Lista de viajes aceptados para el usuario
   esConductor: boolean = false;
   esPasajero: boolean = false;
+  usuarioActualCorreo: string | null = null;
 
   constructor(
-    private servicioViajes: ServicioViajesService,
     private rolUsuarioService: RolUsuarioService,
     private toastController: ToastController,
     private navController: NavController,
@@ -25,6 +24,14 @@ export class ListadoDeViajesPage implements OnInit {
 
   async ngOnInit() {
     console.log('Inicializando listado de viajes...');
+
+    // Obtener el correo del usuario actual
+    this.usuarioActualCorreo = this.firestoreService.getCorreoUsuarioActual();
+    if (!this.usuarioActualCorreo) {
+      console.error('No se pudo obtener el correo del usuario actual.');
+      return;
+    }
+    console.log('Correo del usuario actual:', this.usuarioActualCorreo);
 
     // Verificar el rol del usuario
     this.esConductor = this.rolUsuarioService.esConductor();
@@ -36,68 +43,100 @@ export class ListadoDeViajesPage implements OnInit {
       this.esPasajero
     );
 
+    // Redirigir al pasajero si tiene un viaje aceptado
     if (this.esPasajero) {
-      console.log('Buscando viajes aceptados para el pasajero...');
       const viajesAceptados = await this.firestoreService.getDocumentsByQuery(
         'viajes',
         'estado',
         'aceptado'
       );
 
-      console.log('Viajes aceptados encontrados:', viajesAceptados);
+      // Buscar un viaje aceptado donde el pasajero es el usuario actual
+      const viajeActual = viajesAceptados.find(
+        (viaje) => viaje.pasajeroCorreo === this.usuarioActualCorreo
+      );
 
-      if (viajesAceptados.length > 0) {
-        console.log('Redirigiendo a la vista de viaje actual...');
-        this.navController.navigateRoot(
-          `/viaje-actual/${viajesAceptados[0].id}`
-        );
-        return; // Salir de ngOnInit
+      if (viajeActual) {
+        console.log('Redirigiendo al viaje actual:', viajeActual.id);
+        this.navController.navigateRoot(`/viaje-actual/${viajeActual.id}`);
+        return; // Terminar la ejecución
       }
     }
 
-    // Obtener todos los viajes en estado "pendiente"
-    this.viajesPendientes = await this.firestoreService.getViajesPendientes();
-    console.log('Viajes pendientes encontrados:', this.viajesPendientes);
-
-    if (this.esConductor) {
-      await this.cargarTodosLosViajes();
-    } else if (this.esPasajero) {
-      await this.cargarViajesPendientes();
-    }
+    // Cargar los viajes para conductores y pasajeros
+    await this.cargarTodosLosViajes();
   }
 
   async cargarTodosLosViajes() {
-    this.viajesPendientes = await this.firestoreService.getDocumentsByQuery(
-      'viajes',
-      'estado',
-      'pendiente'
-    );
+    try {
+      // Obtener viajes pendientes
+      this.viajesPendientes = await this.firestoreService.getDocumentsByQuery(
+        'viajes',
+        'estado',
+        'pendiente'
+      );
 
-    this.viajesAceptados = await this.firestoreService.getDocumentsByQuery(
-      'viajes',
-      'estado',
-      'aceptado'
-    );
+      // Agregar datos del conductor y pasajero a los viajes pendientes
+      for (const viaje of this.viajesPendientes) {
+        if (viaje.conductorCorreo) {
+          const datosConductor =
+            await this.firestoreService.obtenerDatosConductor(
+              viaje.conductorCorreo
+            );
+          viaje.conductorNombre = datosConductor?.nombre || 'N/A';
+          viaje.conductorApellido = datosConductor?.apellido || 'N/A';
+        }
+        if (viaje.pasajeroCorreo) {
+          const datosPasajero =
+            await this.firestoreService.obtenerDatosPasajero(
+              viaje.pasajeroCorreo
+            );
+          viaje.pasajeroNombre = datosPasajero?.nombre || 'N/A';
+          viaje.pasajeroApellido = datosPasajero?.apellido || 'N/A';
+        }
+      }
 
-    this.viajesPendientes = await this.agregarDatosConductor(
-      this.viajesPendientes
-    );
-    this.viajesAceptados = await this.agregarDatosConductor(
-      this.viajesAceptados
-    );
+      // Obtener viajes aceptados
+      this.viajesAceptados = await this.firestoreService.getDocumentsByQuery(
+        'viajes',
+        'estado',
+        'aceptado'
+      );
 
-    console.log(
-      'Viajes pendientes con datos del conductor:',
-      this.viajesPendientes
-    );
-    console.log(
-      'Viajes aceptados con datos del conductor:',
-      this.viajesAceptados
-    );
+      // Agregar datos del conductor y pasajero a los viajes aceptados
+      for (const viaje of this.viajesAceptados) {
+        if (viaje.conductorCorreo) {
+          const datosConductor =
+            await this.firestoreService.obtenerDatosConductor(
+              viaje.conductorCorreo
+            );
+          viaje.conductorNombre = datosConductor?.nombre || 'N/A';
+          viaje.conductorApellido = datosConductor?.apellido || 'N/A';
+        }
+        if (viaje.pasajeroCorreo) {
+          const datosPasajero =
+            await this.firestoreService.obtenerDatosPasajero(
+              viaje.pasajeroCorreo
+            );
+          viaje.pasajeroNombre = datosPasajero?.nombre || 'N/A';
+          viaje.pasajeroApellido = datosPasajero?.apellido || 'N/A';
+        }
+      }
+
+      console.log(
+        'Viajes pendientes con datos adicionales:',
+        this.viajesPendientes
+      );
+      console.log(
+        'Viajes aceptados con datos adicionales:',
+        this.viajesAceptados
+      );
+    } catch (error) {
+      console.error('Error al cargar todos los viajes:', error);
+    }
   }
 
   // Función auxiliar para agregar datos del conductor a una lista de viajes
-
   private async agregarDatosConductor(viajes: any[]): Promise<any[]> {
     for (const viaje of viajes) {
       if (viaje.conductorCorreo) {
@@ -111,21 +150,14 @@ export class ListadoDeViajesPage implements OnInit {
     return viajes;
   }
 
-  private async cargarViajesPendientes() {
-    this.viajesPendientes = await this.firestoreService.getDocumentsByQuery(
-      'viajes',
-      'estado',
-      'pendiente'
-    );
-    console.log('Viajes pendientes:', this.viajesPendientes);
-  }
-
+  // Método corregido para obtener los datos del conductor
   async obtenerDatosConductor(correo: string): Promise<any> {
     const conductores = await this.firestoreService.getDocumentsByQuery(
       'users',
       'email',
       correo
     );
+    return conductores.length > 0 ? conductores[0] : null; // Retorna el primer conductor encontrado
   }
 
   // Función para tomar un viaje (solo para pasajeros)
@@ -205,10 +237,63 @@ export class ListadoDeViajesPage implements OnInit {
       });
       await toast.present();
     } catch (error) {
-      console.error(`Error al eliminar el viaje con ID ${viajeId}:`, error);
+      console.error(
+        `Error al intentar eliminar el viaje:`,
+        (error as Error).message
+      );
 
       const toast = await this.toastController.create({
-        message: 'Hubo un error al intentar eliminar el viaje.',
+        message:
+          (error as Error).message ||
+          'No tienes permisos para eliminar este viaje.',
+        duration: 3000,
+        position: 'bottom',
+        color: 'danger',
+      });
+      await toast.present();
+    }
+  }
+
+  async cancelarViaje(viajeId: string) {
+    console.log('ID del viaje recibido para cancelar:', viajeId);
+
+    if (!viajeId) {
+      console.error('El ID del viaje no es válido. No se puede cancelar.');
+      return;
+    }
+
+    try {
+      // Llama al servicio Firestore para eliminar el viaje
+      await this.firestoreService.eliminarViaje(viajeId);
+
+      console.log(
+        `Viaje con ID ${viajeId} cancelado exitosamente de Firestore.`
+      );
+
+      // Actualiza dinámicamente la lista de viajes pendientes
+      this.viajesPendientes = this.viajesPendientes.filter(
+        (viaje) => viaje.id !== viajeId
+      );
+      console.log(
+        'Lista actualizada de viajes pendientes:',
+        this.viajesPendientes
+      );
+
+      const toast = await this.toastController.create({
+        message: 'El viaje ha sido cancelado correctamente.',
+        duration: 2000,
+        position: 'bottom',
+        color: 'warning',
+      });
+      await toast.present();
+    } catch (error) {
+      console.error(
+        `Error al intentar cancelar el viaje:`,
+        (error as Error).message
+      );
+
+      const toast = await this.toastController.create({
+        message: 'Hubo un error al cancelar el viaje. Inténtalo de nuevo.',
         duration: 3000,
         position: 'bottom',
         color: 'danger',

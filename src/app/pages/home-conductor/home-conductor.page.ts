@@ -6,7 +6,6 @@ import {
 } from '@ionic/angular';
 import { ModalLoginComponent } from '../../components/modal-login/modal-login.component';
 import { Router } from '@angular/router';
-import { ServicioViajesService } from 'src/app/services/servicio-viajes.service'; // Importar servicio de viajes
 
 @Component({
   selector: 'app-home-conductor',
@@ -20,7 +19,6 @@ export class HomeConductorPage implements OnInit {
     private modalController: ModalController,
     private router: Router,
     private toastController: ToastController,
-    private servicioViajes: ServicioViajesService,
     private animationCtrl: AnimationController
   ) {}
 

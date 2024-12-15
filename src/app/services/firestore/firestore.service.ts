@@ -158,6 +158,42 @@ export class FirestoreService {
     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   }
 
+  async obtenerDatosPasajero(correo: string): Promise<any> {
+    const pasajeros = await this.getDocumentsByQuery('users', 'email', correo);
+    if (pasajeros.length > 0) {
+      return pasajeros[0]; // Retornar el primer documento que coincida
+    } else {
+      console.warn(
+        `No se encontraron datos para el pasajero con correo: ${correo}`
+      );
+      return null;
+    }
+  }
+
+  async obtenerDatosConductor(correo: string): Promise<any> {
+    try {
+      const conductores = await this.getDocumentsByQuery(
+        'users',
+        'email',
+        correo
+      );
+      if (conductores.length > 0) {
+        return conductores[0]; // Retornar el primer documento que coincida
+      } else {
+        console.warn(
+          `No se encontraron datos para el conductor con correo: ${correo}`
+        );
+        return null;
+      }
+    } catch (error) {
+      console.error(
+        `Error al obtener datos del conductor con correo ${correo}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
   async actualizarEstadoViaje(
     viajeId: string,
     nuevoEstado: string
@@ -178,9 +214,27 @@ export class FirestoreService {
     }
 
     try {
+      // Obtener el documento del viaje
       const referenciaDocumento = doc(this.firestore, `viajes/${viajeId}`);
-      console.log('Referencia del documento:', referenciaDocumento);
+      const documento = await getDoc(referenciaDocumento);
 
+      if (!documento.exists()) {
+        console.error(`No se encontró un viaje con ID ${viajeId}.`);
+        return;
+      }
+
+      const datosViaje = documento.data();
+      const conductorCorreo = datosViaje['conductorCorreo'];
+      const usuarioActualCorreo = this.getCorreoUsuarioActual();
+
+      if (usuarioActualCorreo !== conductorCorreo) {
+        console.error(
+          'El usuario actual no tiene permisos para eliminar este viaje.'
+        );
+        throw new Error('No tienes permisos para eliminar este viaje.');
+      }
+
+      // Proceder a eliminar el documento
       await deleteDoc(referenciaDocumento);
       console.log(
         `Viaje con ID ${viajeId} eliminado correctamente de Firestore.`
