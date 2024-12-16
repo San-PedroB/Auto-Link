@@ -1,8 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ModalLoginComponent } from './modal-login.component';
-import { Router } from '@angular/router';
-import { RolUsuarioService } from '../../services/rol-usuario.service';
+import { ModalController, AngularDelegate } from '@ionic/angular';
 
 describe('ModalLoginComponent', () => {
   let component: ModalLoginComponent;
@@ -12,18 +10,9 @@ describe('ModalLoginComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ModalLoginComponent],
       providers: [
-        {
-          provide: Router,
-          useValue: jasmine.createSpyObj('Router', ['navigate']),
-        },
-        {
-          provide: RolUsuarioService,
-          useValue: jasmine.createSpyObj('RolUsuarioService', [
-            'setRolUsuario',
-          ]),
-        },
+        ModalController,
+        { provide: AngularDelegate, useValue: {} }, // Mock de AngularDelegate
       ],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
   });
 
@@ -33,7 +22,7 @@ describe('ModalLoginComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create the component', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });

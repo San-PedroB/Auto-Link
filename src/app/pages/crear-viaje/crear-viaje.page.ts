@@ -7,7 +7,6 @@ import {
 } from '@angular/forms';
 import { ToastController, NavController } from '@ionic/angular';
 
-import { ServicioViajesService } from '../../services/servicio-viajes.service'; // Importa el servicio de viajes
 import { FirestoreService } from '../../services/firestore/firestore.service';
 import { GuardarCorreoService } from 'src/app/services/guardar-correo.service';
 import { ActivatedRoute, Route } from '@angular/router';
@@ -26,7 +25,6 @@ export class CrearViajePage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private servicioViajes: ServicioViajesService,
     private toastController: ToastController,
     private navController: NavController,
     private formBuilder: FormBuilder,
@@ -141,14 +139,6 @@ export class CrearViajePage implements OnInit {
     }
 
     return false; // No hay un viaje activo
-  }
-
-  async obtenerCantidadPasajeros() {
-    const datosViaje = this.servicioViajes.getDatos();
-    if (datosViaje && datosViaje.cantidadPasajeros !== undefined) {
-      this.numeroPasajeros = datosViaje.cantidadPasajeros;
-    }
-    console.log('Número de pasajeros:', this.numeroPasajeros);
   }
 
   ngOnInit() {}
